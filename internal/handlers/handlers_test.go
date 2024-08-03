@@ -93,6 +93,7 @@ func TestGetURLHandle(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			resp, _ := testGetRequest(t, ts, http.MethodGet, test.urlID)
+			defer resp.Body.Close()
 			assert.Equal(t, test.want.statusCode, resp.StatusCode)
 			assert.Equal(t, test.want.origin, resp.Header.Get("Location"))
 		})
