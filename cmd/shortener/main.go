@@ -1,18 +1,22 @@
 package main
 
 import (
+	"github.com/go-chi/chi/v5"
 	"github.com/halviet/shortener/internal/handlers"
+	"github.com/halviet/shortener/internal/storage"
 	"log"
 	"net/http"
 )
 
 func main() {
-	mux := http.NewServeMux()
+	store := storage.New()
 
-	mux.HandleFunc("POST /", handlers.ShortenURLHandle)
-	mux.HandleFunc("GET /{id}", handlers.GetURLHandle)
+	r := chi.NewRouter()
 
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	r.Post("/", handlers.ShortenURLHandle(store))
+	r.Get("/{id}", handlers.GetURLHandle(store))
+
+	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Fatal(err)
 	}
 }
