@@ -1,42 +1,48 @@
 package handlers
 
 import (
+	"github.com/go-chi/chi/v5"
+	"github.com/halviet/shortener/internal/app"
+	"github.com/halviet/shortener/internal/storage"
 	"io"
 	"net/http"
 )
 
-func ShortenURLHandle(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST requests are allowed!", http.StatusMethodNotAllowed)
-		return
-	}
+func ShortenURLHandle(store *storage.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		resp, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
 
-	defer r.Body.Close()
-	resp, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
+		if len(resp) < 11 {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+		}
 
-	if len(resp) < 11 {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-	}
+		urlID := app.RandString(8)
+		url := "http://localhost:8080/" + urlID
 
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("https://localhost:8080/EwHXdJfB"))
+		store.SaveURL(storage.ShortURL{
+			Origin: string(resp),
+			Short:  urlID,
+		})
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(url))
+	}
 }
 
-func GetURLHandle(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Only GET requests are allowed!", http.StatusMethodNotAllowed)
-		return
-	}
+func GetURLHandle(store *storage.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		urlID := chi.URLParam(r, "id")
 
-	if r.PathValue("id") == "EwHXdJfB" {
-		w.Header().Set("Location", "https://practicum.yandex.ru/")
-		w.Header().Set("Content-Type", "text/plain")
+		url, err := store.GetOrigin(urlID)
+		if err != nil {
+			http.NotFound(w, r)
+		}
+
+		w.Header().Set("Location", url)
 		w.WriteHeader(http.StatusTemporaryRedirect)
-		return
 	}
-
-	http.Error(w, "Incorrect request", http.StatusBadRequest)
 }
