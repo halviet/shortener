@@ -3,12 +3,13 @@ package handlers
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/halviet/shortener/internal/app"
+	"github.com/halviet/shortener/internal/config"
 	"github.com/halviet/shortener/internal/storage"
 	"io"
 	"net/http"
 )
 
-func ShortenURLHandle(store *storage.Store) http.HandlerFunc {
+func ShortenURLHandle(store *storage.Store, cfg config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		resp, err := io.ReadAll(r.Body)
@@ -21,7 +22,7 @@ func ShortenURLHandle(store *storage.Store) http.HandlerFunc {
 		}
 
 		urlID := app.RandString(8)
-		url := "http://localhost:8080/" + urlID
+		url := cfg.BaseAddr + urlID
 
 		store.SaveURL(storage.ShortURL{
 			Origin: string(resp),
