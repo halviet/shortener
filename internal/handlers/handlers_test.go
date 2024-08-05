@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"github.com/go-chi/chi/v5"
+	"github.com/halviet/shortener/internal/config"
 	"github.com/halviet/shortener/internal/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -43,11 +44,10 @@ func TestShortenURLHandle(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer([]byte(test.body)))
 			w := httptest.NewRecorder()
-			ShortenURLHandle(&storage.Store{})(w, r)
+			ShortenURLHandle(&storage.Store{}, config.Config{BaseAddr: "http://localhost:8080"})(w, r)
 
 			res := w.Result()
 			defer res.Body.Close()
-			//resBody, err := io.ReadAll(res.Body)
 
 			assert.Equal(t, test.want.statusCode, res.StatusCode)
 		})
