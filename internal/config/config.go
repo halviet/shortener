@@ -22,6 +22,12 @@ func ParseFlags() Flags {
 		flags.BaseAddr = &baseAddr
 	}
 
+	// adding a trailing slash at the end of a base address
+	if (*flags.BaseAddr)[len(*flags.BaseAddr)-1:] != "/" {
+		baseAddr := *flags.BaseAddr + "/"
+		flags.BaseAddr = &baseAddr
+	}
+
 	return flags
 }
 
