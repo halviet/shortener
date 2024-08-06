@@ -47,6 +47,12 @@ func parseFlags() Config {
 		BaseAddr: *baseAddr,
 	}
 
+	// checking is -b flag was set
+	// if it's not, then server address used as base
+	if cfg.BaseAddr == "" {
+		cfg.BaseAddr = "http://" + cfg.Addr + "/"
+	}
+
 	return cfg
 }
 
@@ -56,12 +62,6 @@ func parseEnv() (Config, error) {
 	err := env.Parse(&cfg)
 	if err != nil {
 		return Config{}, fmt.Errorf("parseEnv: %v", err)
-	}
-
-	// checking is -b flag was set
-	// if it's not, then server address used as base
-	if cfg.BaseAddr == "" {
-		cfg.BaseAddr = "http://" + cfg.Addr + "/"
 	}
 
 	return cfg, nil
