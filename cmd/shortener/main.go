@@ -10,7 +10,10 @@ import (
 )
 
 func main() {
-	cfg := config.New()
+	cfg, err := config.New()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	store := storage.New()
 	r := chi.NewRouter()
@@ -18,6 +21,7 @@ func main() {
 	r.Post("/", handlers.ShortenURLHandle(store, cfg))
 	r.Get("/{id}", handlers.GetURLHandle(store))
 
+	log.Println("Running on:", cfg.Addr)
 	if err := http.ListenAndServe(cfg.Addr, r); err != nil {
 		log.Fatal(err)
 	}
