@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Addr     string `env:"SERVER_ADDRESS"`
 	BaseAddr string `env:"BASE_URL"`
+	LogLevel string `env:"LOG_LEVEL"`
 }
 
 func New() (Config, error) {
@@ -27,6 +28,9 @@ func New() (Config, error) {
 	if envs.BaseAddr != "" {
 		cfg.BaseAddr = envs.BaseAddr
 	}
+	if envs.LogLevel != "" {
+		cfg.LogLevel = envs.LogLevel
+	}
 
 	// adding a trailing slash at the end of a base address
 	if cfg.BaseAddr[len(cfg.BaseAddr)-1:] != "/" {
@@ -39,12 +43,14 @@ func New() (Config, error) {
 func parseFlags() Config {
 	addr := flag.String("a", "localhost:8080", "address for HTTP-server (addr:port); default localhost:8080")
 	baseAddr := flag.String("b", "", "sets base address for all resulting short urls; if not set uses -a flag address")
+	logLevel := flag.String("l", "info", "sets log level, by default: info")
 
 	flag.Parse()
 
 	cfg := Config{
 		Addr:     *addr,
 		BaseAddr: *baseAddr,
+		LogLevel: *logLevel,
 	}
 
 	// checking is -b flag was set
