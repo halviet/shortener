@@ -30,6 +30,10 @@ func main() {
 	r.Post("/", handlers.ShortenURLHandle(store, cfg))
 	r.Get("/{id}", handlers.GetURLHandle(store))
 
+	r.Route("/api", func(r chi.Router) {
+		r.Post("/shorten", handlers.JSONShortenURLHandle(store, cfg))
+	})
+
 	logger.Log.Info("Running on", zap.String("addr", cfg.Addr))
 	if err = http.ListenAndServe(cfg.Addr, r); err != nil {
 		logger.Log.Fatal("Server crash", zap.String("error", err.Error()))
