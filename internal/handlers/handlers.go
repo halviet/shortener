@@ -64,9 +64,23 @@ func JSONShortenURLHandle(store *storage.Store, cfg config.Config) http.HandlerF
 				return
 			}
 
-			w.Write(res)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
+			w.Write(res)
+			return
+		}
+
+		if req.URL == "" {
+			res, err := json.Marshal(ResponseErr{Error: "Bad Request"})
+			if err != nil {
+				logger.Log.Error("encoding error json response", zap.Error(err))
+				http.Error(w, "Bad Request", http.StatusBadRequest)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write(res)
 			return
 		}
 
@@ -85,9 +99,10 @@ func JSONShortenURLHandle(store *storage.Store, cfg config.Config) http.HandlerF
 			return
 		}
 
-		w.Write(resp)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
+		w.Write(resp)
+		return
 	}
 }
 
