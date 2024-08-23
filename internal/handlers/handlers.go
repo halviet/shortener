@@ -102,7 +102,6 @@ func JSONShortenURLHandle(store *storage.Store, cfg config.Config) http.HandlerF
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		w.Write(resp)
-		return
 	}
 }
 

@@ -121,7 +121,7 @@ func TestJSONShortenURLHandle(t *testing.T) {
 			statusCode int
 		}
 		payload struct {
-			Url string `json:"url"`
+			URL string `json:"url"`
 		}
 	)
 
@@ -132,7 +132,7 @@ func TestJSONShortenURLHandle(t *testing.T) {
 	}{
 		{
 			"correct request",
-			payload{Url: "https://usjogdlhweujihogvnr.com/saf3/w4sddsg/dsg"},
+			payload{URL: "https://usjogdlhweujihogvnr.com/saf3/w4sddsg/dsg"},
 			want{http.StatusCreated},
 		},
 		{
@@ -143,7 +143,7 @@ func TestJSONShortenURLHandle(t *testing.T) {
 		{
 			"int for url",
 			struct {
-				Url int `json:"url"`
+				URL int `json:"url"`
 			}{10},
 			want{http.StatusBadRequest},
 		},
@@ -179,9 +179,9 @@ func TestJSONShortenURLHandle(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			resp, err := ts.Client().Do(req)
+			require.NoError(t, err)
 			defer resp.Body.Close()
 
-			require.NoError(t, err)
 			assert.Equal(t, test.want.statusCode, resp.StatusCode)
 
 			var res Response
