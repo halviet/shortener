@@ -26,6 +26,7 @@ func main() {
 
 	r.Use(mw.ResponseLogger)
 	r.Use(mw.RequestLogger)
+	r.Use(mw.GzipCompress)
 
 	r.Post("/", handlers.ShortenURLHandle(store, cfg))
 	r.Get("/{id}", handlers.GetURLHandle(store))
