@@ -3,8 +3,8 @@ package storage
 import "fmt"
 
 type Storage interface {
-	SaveURL(shortURL, origin string)
-	GetOrigin(shortURL string) (origin string)
+	SaveURL(shortURL ShortURL)
+	GetOrigin(shortURL string) (origin string, err error)
 }
 
 type ShortURL struct {

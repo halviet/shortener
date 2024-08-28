@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"github.com/halviet/shortener/internal/config"
 	"github.com/halviet/shortener/internal/storage"
@@ -112,4 +113,81 @@ func testGetRequest(t *testing.T, ts *httptest.Server, method, path string) (*ht
 	require.NoError(t, err)
 
 	return resp, string(respBody)
+}
+
+func TestJSONShortenURLHandle(t *testing.T) {
+	type (
+		want struct {
+			statusCode int
+		}
+		payload struct {
+			URL string `json:"url"`
+		}
+	)
+
+	tests := []struct {
+		name    string
+		payload interface{}
+		want    want
+	}{
+		{
+			"correct request",
+			payload{URL: "https://usjogdlhweujihogvnr.com/saf3/w4sddsg/dsg"},
+			want{http.StatusCreated},
+		},
+		{
+			"empty request body",
+			payload{},
+			want{http.StatusBadRequest},
+		},
+		{
+			"int for url",
+			struct {
+				URL int `json:"url"`
+			}{10},
+			want{http.StatusBadRequest},
+		},
+	}
+
+	endpoint := "/api/shorten"
+
+	store := storage.New()
+	cfg, err := config.New()
+	require.NoError(t, err)
+
+	r := chi.NewRouter()
+	r.Route("/api", func(r chi.Router) {
+		r.Post("/shorten", JSONShortenURLHandle(store, cfg))
+	})
+
+	ts := httptest.NewServer(r)
+	ts.Client().CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+
+	defer ts.Close()
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var body bytes.Buffer
+			err := json.NewEncoder(&body).Encode(test.payload)
+			require.NoError(t, err)
+
+			req, err := http.NewRequest(http.MethodPost, ts.URL+endpoint, &body)
+			require.NoError(t, err)
+
+			req.Header.Set("Content-Type", "application/json")
+
+			resp, err := ts.Client().Do(req)
+			require.NoError(t, err)
+			defer resp.Body.Close()
+
+			assert.Equal(t, test.want.statusCode, resp.StatusCode)
+
+			var res Response
+			err = json.NewDecoder(resp.Body).Decode(&res)
+
+			require.NoError(t, err)
+		})
+	}
 }
